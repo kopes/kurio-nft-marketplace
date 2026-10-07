@@ -5,7 +5,7 @@ Implementação do desafio [Marketplace de NFTs](docs/DESAFIO.md) em React + Typ
 Todas as APIs, a autenticação, as carteiras, os pagamentos e os eventos em tempo real funcionam com dados simulados pelo **MSW**, inclusive no build de demonstração. Detalhes de arquitetura, contratos, cache, sessão, reconciliação REST × Socket.IO, decisões de UX e desvios do Figma estão em [ARCHITECTURE.md](ARCHITECTURE.md).
 
 - **Deploy:** https://kurio-nft-marketplace-roan.vercel.app
-- **Repositório:** _pendente_
+- **Repositório:** https://github.com/kopes/kurio-nft-marketplace
 
 ## Stack
 
