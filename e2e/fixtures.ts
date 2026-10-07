@@ -122,10 +122,30 @@ export async function goToCheckout(app: App, page: Page, nftIds: string[] = ['em
   await app.login(USERS.ana)
   for (const id of nftIds) await app.addToCart(id)
   await page.goto('/pagamento')
-  await expect(page.getByRole('heading', { name: 'Perfil do colecionador' })).toBeVisible()
-  // Dados pré-preenchidos a partir do perfil e da carteira principal cadastrada.
-  await expect(page.getByLabel('Nome de exibição')).toHaveValue('Ana Ribeiro')
+  await expectCheckoutReady(app, page)
+}
+
+/** Checkout pronto: dados pré-preenchidos a partir do perfil e da carteira principal cadastrada. */
+export async function expectCheckoutReady(app: App, page: Page) {
+  if (app.isMobile) {
+    // Frame "Mobile / Pagamento": os campos ficam na folha "Dados do pagamento".
+    await expect(page.getByRole('heading', { name: 'Carteira conectada' })).toBeVisible()
+    await openCheckoutDetails(page)
+    await expect(page.getByLabel('Nome de exibição')).toHaveValue('Ana Ribeiro')
+    await page.getByRole('dialog', { name: 'Dados do pagamento' }).getByRole('button', { name: 'Fechar' }).click()
+  } else {
+    await expect(page.getByRole('heading', { name: 'Perfil do colecionador' })).toBeVisible()
+    await expect(page.getByLabel('Nome de exibição')).toHaveValue('Ana Ribeiro')
+  }
   await expect(page.getByRole('radio', { name: /Principal/ })).toHaveAttribute('aria-checked', 'true')
+}
+
+/** Mobile: abre a folha com os dados do colecionador e da carteira ("Trocar carteira"). */
+export async function openCheckoutDetails(page: Page) {
+  await page.getByRole('button', { name: 'Trocar carteira' }).click()
+  const sheet = page.getByRole('dialog', { name: 'Dados do pagamento' })
+  await expect(sheet).toBeVisible()
+  return sheet
 }
 
 export async function openReview(page: Page) {

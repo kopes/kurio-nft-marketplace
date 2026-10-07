@@ -1,4 +1,4 @@
-import { expect, test, USERS } from './fixtures'
+import { expect, openReview, test, USERS } from './fixtures'
 
 test.describe('Carrinho', () => {
   test('quantidades, remoção, cupom e persistência após refresh', async ({ app, page }) => {
@@ -59,10 +59,21 @@ test.describe('Carrinho', () => {
     await expect(page).toHaveURL(/\/entrar\?redirect=%2Fpagamento/)
     await app.login(USERS.ana)
     await expect(page).toHaveURL(/\/pagamento$/)
-    await expect(page.getByRole('complementary', { name: 'Seus NFTs' }).getByText('Violet Nomad #314')).toBeVisible()
+    // No mobile o frame do pagamento mostra só o total: os itens aparecem na revisão do pedido.
+    const expectItem = async () => {
+      if (!app.isMobile) {
+        await expect(page.getByRole('complementary', { name: 'Seus NFTs' }).getByText('Violet Nomad #314')).toBeVisible()
+        return
+      }
+      await expect(page.getByRole('radio', { name: /Principal/ })).toHaveAttribute('aria-checked', 'true')
+      const review = await openReview(page)
+      await expect(review.getByText('Violet Nomad #314')).toBeVisible()
+      await review.getByRole('button', { name: 'Voltar e editar' }).click()
+    }
+    await expectItem()
     await page.reload()
     await app.ready()
-    await expect(page.getByRole('complementary', { name: 'Seus NFTs' }).getByText('Violet Nomad #314')).toBeVisible()
+    await expectItem()
   })
 
   test('limite por edição é respeitado pela API', async ({ app, page }) => {

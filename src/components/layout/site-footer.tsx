@@ -65,10 +65,12 @@ function Newsletter() {
 /**
  * Espaço inferior no mobile para elementos fixos: barra de abas (126 px com o botão central)
  * ou barra de compra do detalhe (~166 px + safe area). Telas sem barra fixa não precisam de reserva.
+ * Carrinho e pagamento ocupam exatamente a tela no mobile (como nos frames): sem rodapé nem rolagem abaixo da ação.
  */
 function mobileBottomSpace(pathname: string) {
   if (pathname.startsWith('/nft/')) return 'pb-[calc(184px+env(safe-area-inset-bottom))]'
-  if (/^\/(carrinho|pagamento|entrar|cadastro)/.test(pathname)) return 'pb-6'
+  if (/^\/(carrinho|pagamento)/.test(pathname)) return 'max-md:hidden'
+  if (/^\/(entrar|cadastro)/.test(pathname)) return 'pb-6'
   return 'pb-36'
 }
 

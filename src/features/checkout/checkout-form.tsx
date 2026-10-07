@@ -8,6 +8,21 @@ import { cn } from '@/lib/utils'
 
 export type CheckoutValues = Required<CollectorInput>
 
+/** Ordem visual dos campos do formulário (foco no primeiro erro quando o formulário abre já com erros). */
+export const checkoutFieldOrder: Array<keyof CheckoutValues> = [
+  'displayName',
+  'username',
+  'network',
+  'profileName',
+  'walletAddress',
+  'secondaryAddress',
+  'walletProvider',
+  'referralCode',
+  'email',
+  'ensName',
+  'note',
+]
+
 export function shortAddress(address: string) {
   return address.length > 14 ? `${address.slice(0, 6)}…${address.slice(-4)}` : address
 }
@@ -21,7 +36,18 @@ interface WalletChooserProps {
   onUseOther: (value: boolean) => void
 }
 
-/** Carteiras cadastradas (frame mobile "Carteira conectada"): selecionar preenche os dados da carteira. */
+/** Opção "Usar outra carteira?": libera os campos da carteira para preenchimento manual. */
+export function UseOtherWalletToggle({ checked, onChange, className }: { checked: boolean; onChange: (value: boolean) => void; className?: string }) {
+  return (
+    <label className={cn('flex w-fit cursor-pointer items-center gap-2 text-[15px]', className)}>
+      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="peer sr-only" />
+      <span aria-hidden="true" className="flex size-4 items-center justify-center rounded-full border border-primary peer-checked:after:size-2 peer-checked:after:rounded-full peer-checked:after:bg-primary peer-focus-visible:outline-2 peer-focus-visible:outline-solid peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring" />
+      Usar outra carteira?
+    </label>
+  )
+}
+
+/** Carteiras cadastradas (desktop): selecionar preenche os dados da carteira. O mobile tem cards próprios (mobile-checkout.tsx). */
 export function WalletChooser({ wallets, loading, selectedId, useOther, onSelect, onUseOther }: WalletChooserProps) {
   return (
     <fieldset className="flex flex-col gap-3">
@@ -59,11 +85,7 @@ export function WalletChooser({ wallets, loading, selectedId, useOther, onSelect
       ) : (
         <p className="text-sm text-sand">Você ainda não cadastrou carteiras. Preencha os dados abaixo ou cadastre em “Carteiras” no seu perfil.</p>
       )}
-      <label className="mt-1 flex w-fit cursor-pointer items-center gap-2 text-[15px]">
-        <input type="checkbox" checked={useOther} onChange={(event) => onUseOther(event.target.checked)} className="peer sr-only" />
-        <span aria-hidden="true" className="flex size-4 items-center justify-center rounded-full border border-primary peer-checked:after:size-2 peer-checked:after:rounded-full peer-checked:after:bg-primary peer-focus-visible:outline-2 peer-focus-visible:outline-solid peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring" />
-        Usar outra carteira?
-      </label>
+      <UseOtherWalletToggle checked={useOther} onChange={onUseOther} className="mt-1" />
     </fieldset>
   )
 }

@@ -40,7 +40,9 @@ test.describe('Regressão visual', () => {
     await app.login(USERS.ana)
     await app.addToCart('emerald-ape-042')
     await page.goto('/pagamento')
-    await expect(page.getByLabel('Nome de exibição')).toHaveValue('Ana Ribeiro')
+    // No mobile os campos ficam na folha "Dados do pagamento" (fora do frame); a carteira principal vem selecionada.
+    if (app.isMobile) await expect(page.getByRole('radio', { name: /Principal/ })).toHaveAttribute('aria-checked', 'true')
+    else await expect(page.getByLabel('Nome de exibição')).toHaveValue('Ana Ribeiro')
     await expect(page.getByText('1.206 ETH')).toBeVisible()
     await page.waitForTimeout(500)
     await expect(page).toHaveScreenshot('pagamento.png', { fullPage: true, mask: [page.locator('[data-sonner-toaster]')] })

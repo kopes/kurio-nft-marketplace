@@ -3,7 +3,8 @@ import { expect, goToCheckout, openReview, test } from './fixtures'
 test.describe('Tempo real (Socket.IO via MSW)', () => {
   test('preço alterado durante o checkout atualiza o resumo e exige nova confirmação', async ({ app, page }) => {
     await goToCheckout(app, page, ['golden-signal-160'])
-    const summary = page.getByRole('complementary', { name: 'Seus NFTs' })
+    // No mobile o frame mostra só o total (sem a lista "Seus NFTs").
+    const summary = app.isMobile ? page.locator('#conteudo') : page.getByRole('complementary', { name: 'Seus NFTs' })
     await expect(summary.getByText('0.406 ETH')).toBeVisible()
     const review = await openReview(page)
 

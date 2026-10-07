@@ -17,6 +17,7 @@ import { EthPrice } from '@/components/nft/price'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CollectorSchema, walletProviderLabels, networkLabels, type Quote, type Wallet, type WalletConnection, type WalletProvider } from '@/shared/contracts'
+import { useIsMobile } from '@/hooks/use-media-query'
 import { announce } from '@/lib/announcer'
 import { cn } from '@/lib/utils'
 import { useProfile, useWallets } from '@/features/account/queries'
@@ -27,7 +28,8 @@ import { usePendingOrders } from '@/features/orders/queries'
 import { realtimeClient } from '@/features/realtime/realtime-client'
 import { useSession } from '@/features/session/use-session'
 import { loadCheckoutDraft, saveCheckoutDraft } from './checkout-storage'
-import { CheckoutForm, WalletChooser, shortAddress, type CheckoutValues } from './checkout-form'
+import { CheckoutForm, UseOtherWalletToggle, WalletChooser, checkoutFieldOrder, shortAddress, type CheckoutValues } from './checkout-form'
+import { CheckoutDetailsSheet, MobileWalletCard, ProviderOption, WalletMenu, walletNetworkLine } from './mobile-checkout'
 import { ReviewDialog, type ReviewState } from './review-dialog'
 import { usePlaceOrder } from './use-place-order'
 
@@ -82,6 +84,7 @@ export function CheckoutPage() {
   const wallets = useWallets()
   const pending = usePendingOrders()
   const placeOrder = usePlaceOrder()
+  const isMobile = useIsMobile()
 
   const draft = useMemo(() => loadCheckoutDraft(userId), [userId])
   const [walletId, setWalletId] = useState<string | null>(draft?.walletId ?? null)
@@ -90,7 +93,7 @@ export function CheckoutPage() {
   const [connectError, setConnectError] = useState<string | null>(null)
   const [review, setReview] = useState<ReviewState>({ open: false, reviewed: null })
   const [orderError, setOrderError] = useState<string | null>(null)
-  // No mobile os dados (pré-preenchidos) ficam recolhidos, como no frame "Mobile / Pagamento".
+  // No mobile os dados (pré-preenchidos) ficam numa folha fora do frame "Mobile / Pagamento"; ela abre se houver erro.
   const [detailsOpen, setDetailsOpen] = useState(false)
 
   const form = useForm<CheckoutValues>({
@@ -183,6 +186,29 @@ export function CheckoutPage() {
     }
   }
 
+  /** Conexão simulada sob demanda: valida antes endereço e rede (no mobile, abre os dados se faltar algo). */
+  const connectWallet = () =>
+    void form.trigger(['walletAddress', 'network']).then((ok) => {
+      if (ok) connect.mutate()
+      else setDetailsOpen(true)
+    })
+
+  /** A folha de dados do mobile abre no primeiro campo com erro (os campos só montam com ela aberta). */
+  const focusFirstError = (event: Event) => {
+    const first = checkoutFieldOrder.find((name) => form.formState.errors[name])
+    if (!first) return
+    event.preventDefault()
+    form.setFocus(first)
+    const content = event.currentTarget as HTMLElement
+    if (!content.contains(document.activeElement)) content.focus()
+  }
+
+  const finishDetails = () =>
+    void form.trigger(undefined, { shouldFocus: true }).then((ok) => {
+      if (ok) setDetailsOpen(false)
+      else announce('Revise os campos destacados no formulário.', 'assertive')
+    })
+
   /** Valida o formulário, garante conexão e abre a revisão com a cotação mais recente da API. */
   const startReview = form.handleSubmit(
     async () => {
@@ -268,20 +294,189 @@ export function CheckoutPage() {
     )
   }
 
+  const pendingNotice = pendingOrder && (
+    <div role="status" className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-amber/60 bg-amber/10 px-4 py-3 text-sm">
+      <span>Você tem um pedido aguardando confirmação na rede ({pendingOrder.id}). Aguarde antes de iniciar outra compra.</span>
+      <Link to="/pedido/$orderId" params={{ orderId: pendingOrder.id }} className="font-bold text-highlight hover:underline">
+        Acompanhar pedido
+      </Link>
+    </div>
+  )
+  const blockedNotice = blocked && (
+    <p className="text-sm text-coral">
+      Há itens indisponíveis. <Link to="/carrinho" className="underline">Ajuste o carrinho</Link> para continuar.
+    </p>
+  )
+  const submitDisabled = connect.isPending || !quote.data || blocked || Boolean(pendingOrder)
+  const submitLabel = connect.isPending ? 'Conectando carteira…' : 'Confirmar compra'
+
+  const reviewDialog = (
+    <ReviewDialog
+      state={review}
+      latest={quote.data}
+      values={form.getValues()}
+      connection={connection}
+      submitting={placeOrder.isPending}
+      retryCount={placeOrder.retryCount}
+      error={orderError}
+      onAcceptLatest={() => {
+        setOrderError(null)
+        setReview((state) => ({ ...state, reviewed: quote.data ?? state.reviewed }))
+        announce('Novos valores aceitos. Confirme para enviar o pedido.')
+      }}
+      onConfirm={confirm}
+      onClose={() => setReview({ open: false, reviewed: null })}
+    />
+  )
+
+  // Frame "Mobile / Pagamento": carteiras cadastradas, aplicativo, total e confirmar; o restante fica na folha de dados.
+  if (isMobile) {
+    const walletItems = wallets.data?.items ?? []
+    const walletMenu = (name: string, selected: boolean, onSelect?: () => void) => (
+      <WalletMenu
+        name={name}
+        selected={selected}
+        connected={Boolean(connection)}
+        busy={connect.isPending || disconnect.isPending}
+        onSelect={onSelect}
+        onConnect={connectWallet}
+        onDisconnect={() => connection && disconnect.mutate(connection.id)}
+        onEditDetails={() => setDetailsOpen(true)}
+      />
+    )
+    return (
+      <div className="flex min-h-dvh flex-col px-7 pb-[calc(2rem+env(safe-area-inset-bottom))]">
+        {/* Título de 20 px como no frame (414 px); em telas mais estreitas que ~380 px ele encolhe para caber em uma linha. */}
+        <MobileTopBar
+          title="Pagamento com carteira"
+          fallback="/carrinho"
+          align="start"
+          className="gap-[23px] pt-[31px] pb-0"
+          titleClassName="text-[min(20px,calc((100vw-114px)/13.3))] leading-6"
+          backClassName="text-khaki"
+        />
+        {pendingNotice}
+
+        <div className="mt-[23px] flex animate-fade-up flex-col">
+          <div className="mb-5 empty:hidden">
+            <CartNoticesList />
+          </div>
+
+          <section aria-labelledby="wallets-title">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+              <h2 id="wallets-title" className="text-base leading-5 font-bold whitespace-nowrap">
+                Carteira conectada
+              </h2>
+              <button type="button" onClick={() => setDetailsOpen(true)} className="mr-px ml-auto text-sm leading-5 font-bold whitespace-nowrap text-highlight hover:underline">
+                Trocar carteira
+              </button>
+            </div>
+            <div role="radiogroup" aria-labelledby="wallets-title" className="mt-[13px] flex flex-col gap-5">
+              {wallets.isPending ? (
+                Array.from({ length: 2 }, (_, index) => <Skeleton key={index} className="h-[93px] w-full rounded-[14px]" />)
+              ) : (
+                <>
+                  {walletItems.map((wallet) => {
+                    const checked = !useOther && wallet.id === walletId
+                    return (
+                      <MobileWalletCard
+                        key={wallet.id}
+                        title={wallet.nickname}
+                        address={wallet.secondaryAddress || shortAddress(wallet.address)}
+                        network={walletNetworkLine(wallet.network)}
+                        checked={checked}
+                        onSelect={() => selectWallet(wallet)}
+                        menu={walletMenu(wallet.nickname, checked, () => selectWallet(wallet))}
+                      />
+                    )
+                  })}
+                  {useOther && (
+                    <MobileWalletCard
+                      title="Outra carteira"
+                      address={values.walletAddress ? shortAddress(values.walletAddress) : 'Endereço não informado'}
+                      network={walletNetworkLine(values.network)}
+                      checked
+                      onSelect={() => setDetailsOpen(true)}
+                      menu={walletMenu('Outra carteira', true)}
+                    />
+                  )}
+                </>
+              )}
+            </div>
+            {wallets.data && walletItems.length === 0 && (
+              <p className="mt-3 text-sm text-sand">
+                Você ainda não cadastrou carteiras.{' '}
+                <Link to="/perfil/carteiras" className="font-bold text-highlight hover:underline">
+                  Cadastrar carteira
+                </Link>
+              </p>
+            )}
+          </section>
+
+          <section aria-labelledby="provider-title" className="mt-[14px]">
+            <h2 id="provider-title" className="text-base leading-5 font-bold">
+              Carteira e rede
+            </h2>
+            <div role="radiogroup" aria-labelledby="provider-title" className="mt-[14px] flex flex-col gap-4">
+              {providerOptions.map((option) => (
+                <ProviderOption
+                  key={option.id}
+                  id={option.id}
+                  label={option.label}
+                  checked={values.walletProvider === option.id}
+                  onSelect={() => form.setValue('walletProvider', option.id, { shouldDirty: true })}
+                />
+              ))}
+            </div>
+          </section>
+
+          {quote.isError && !quote.data ? (
+            <div role="alert" className="mt-4 flex items-center justify-between gap-3 rounded-[14px] bg-card px-4 py-3 text-sm">
+              <span className="text-coral">Não foi possível calcular o total.</span>
+              <button type="button" onClick={() => void quote.refetch()} disabled={quote.isFetching} className="shrink-0 font-bold text-highlight hover:underline">
+                Tentar novamente
+              </button>
+            </div>
+          ) : (
+            <div className="mt-3 flex items-center justify-end gap-[30px]">
+              <span className="text-base leading-6 font-bold">Total:</span>
+              {quote.data ? <EthPrice value={quote.data.total} className="text-lg leading-6 font-bold text-highlight" /> : <Skeleton className="h-6 w-28" />}
+            </div>
+          )}
+          {connectError && (
+            <p role="alert" className="mt-4 rounded-sm border border-coral/60 bg-coral/10 px-3 py-2 text-sm text-coral">
+              ⚠ {connectError}
+            </p>
+          )}
+          {blockedNotice && <div className="mt-4">{blockedNotice}</div>}
+        </div>
+
+        <div className="mt-auto pt-8">
+          <Button
+            type="button"
+            onClick={() => void startReview()}
+            disabled={submitDisabled}
+            className="h-[60px] w-full rounded-full bg-[linear-gradient(100deg,#d28a4c,#b57742)] text-[15px] hover:brightness-110"
+          >
+            {submitLabel}
+          </Button>
+        </div>
+
+        <CheckoutDetailsSheet open={detailsOpen} onOpenChange={setDetailsOpen} onOpenAutoFocus={focusFirstError} onDone={finishDetails}>
+          <UseOtherWalletToggle checked={useOther} onChange={toggleOther} />
+          {profile.isPending ? <Skeleton className="h-[420px] w-full" /> : <CheckoutForm form={form} readOnlyWallet={!useOther && Boolean(walletId)} />}
+        </CheckoutDetailsSheet>
+        {reviewDialog}
+      </div>
+    )
+  }
+
   return (
     <div className="container-page pb-10">
-      <MobileTopBar title="Pagamento com carteira" fallback="/carrinho" />
       <Breadcrumbs items={[{ label: 'Início', to: '/' }, { label: 'Mercado', to: '/mercado' }, { label: 'Pagamento' }]} className="pt-10" />
-      <h1 className="sr-only max-md:hidden">Pagamento</h1>
+      <h1 className="sr-only">Pagamento</h1>
 
-      {pendingOrder && (
-        <div role="status" className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-amber/60 bg-amber/10 px-4 py-3 text-sm">
-          <span>Você tem um pedido aguardando confirmação na rede ({pendingOrder.id}). Aguarde antes de iniciar outra compra.</span>
-          <Link to="/pedido/$orderId" params={{ orderId: pendingOrder.id }} className="font-bold text-highlight hover:underline">
-            Acompanhar pedido
-          </Link>
-        </div>
-      )}
+      {pendingNotice}
 
       <div className="mt-6 flex animate-fade-up flex-col gap-10 lg:flex-row lg:gap-8">
         <form onSubmit={startReview} noValidate className="flex min-w-0 flex-1 flex-col gap-6" aria-labelledby="collector-title" id="checkout-form">
@@ -289,24 +484,7 @@ export function CheckoutPage() {
             Perfil do colecionador
           </h2>
           <WalletChooser wallets={wallets.data?.items} loading={wallets.isPending} selectedId={walletId} useOther={useOther} onSelect={selectWallet} onUseOther={toggleOther} />
-          <button
-            type="button"
-            onClick={() => setDetailsOpen((open) => !open)}
-            aria-expanded={detailsOpen}
-            aria-controls="collector-fields"
-            className="flex items-center justify-between rounded-xl bg-card px-4 py-3 text-left md:hidden"
-          >
-            <span className="flex min-w-0 flex-col">
-              <span className="font-bold">Dados do colecionador</span>
-              <span className="truncate text-sm text-sand">
-                {values.displayName || 'Preencha seus dados'} {values.email ? `· ${values.email}` : ''}
-              </span>
-            </span>
-            <span className="text-sm font-bold text-highlight">{detailsOpen ? 'Ocultar' : 'Editar'}</span>
-          </button>
-          <div id="collector-fields" className={cn(!detailsOpen && 'max-md:hidden')}>
-            {profile.isPending ? <Skeleton className="h-[420px] w-full" /> : <CheckoutForm form={form} readOnlyWallet={!useOther && Boolean(walletId)} />}
-          </div>
+          {profile.isPending ? <Skeleton className="h-[420px] w-full" /> : <CheckoutForm form={form} readOnlyWallet={!useOther && Boolean(walletId)} />}
         </form>
 
         <aside aria-labelledby="your-nfts" className="flex w-full flex-col gap-4 lg:w-[405px]">
@@ -395,7 +573,7 @@ export function CheckoutPage() {
             ) : (
               <div className="flex items-center justify-between gap-3">
                 <span className="text-sand">{connect.isPending ? `Aguardando aprovação na ${walletProviderLabels[values.walletProvider]}…` : 'Carteira não conectada'}</span>
-                <button type="button" onClick={() => void form.trigger(['walletAddress', 'network']).then((ok) => ok && connect.mutate())} disabled={connect.isPending} className="text-xs font-bold text-highlight hover:underline">
+                <button type="button" onClick={connectWallet} disabled={connect.isPending} className="text-xs font-bold text-highlight hover:underline">
                   Conectar carteira
                 </button>
               </div>
@@ -407,33 +585,15 @@ export function CheckoutPage() {
             )}
           </div>
 
-          <Button type="submit" form="checkout-form" disabled={connect.isPending || !quote.data || blocked || Boolean(pendingOrder)} className="h-12 text-[15px] max-md:rounded-full">
-            {connect.isPending ? 'Conectando carteira…' : 'Confirmar compra'}
+          <Button type="submit" form="checkout-form" disabled={submitDisabled} className="h-12 text-[15px]">
+            {submitLabel}
           </Button>
-          {blocked && (
-            <p className="text-sm text-coral">
-              Há itens indisponíveis. <Link to="/carrinho" className="underline">Ajuste o carrinho</Link> para continuar.
-            </p>
-          )}
+          {blockedNotice}
         </aside>
       </div>
 
-      <ReviewDialog
-        state={review}
-        latest={quote.data}
-        values={form.getValues()}
-        connection={connection}
-        submitting={placeOrder.isPending}
-        retryCount={placeOrder.retryCount}
-        error={orderError}
-        onAcceptLatest={() => {
-          setOrderError(null)
-          setReview((state) => ({ ...state, reviewed: quote.data ?? state.reviewed }))
-          announce('Novos valores aceitos. Confirme para enviar o pedido.')
-        }}
-        onConfirm={confirm}
-        onClose={() => setReview({ open: false, reviewed: null })}
-      />
+
+      {reviewDialog}
     </div>
   )
 }

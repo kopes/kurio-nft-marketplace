@@ -60,10 +60,18 @@ test.describe('Falhas de pagamento e idempotência', () => {
     await expect(page.getByRole('dialog')).toBeHidden()
     const review = await openReview(page)
     await expect(review.getByText('Carteira conectada')).toBeVisible()
-    // Desconexão: a confirmação exige reconectar.
+    // Desconexão: a confirmação exige reconectar (no mobile, pelo menu ⋮ da carteira selecionada).
     await review.getByRole('button', { name: 'Voltar e editar' }).click()
-    await page.getByRole('button', { name: 'Desconectar' }).click()
-    await expect(page.getByText('Carteira não conectada')).toBeVisible()
+    if (app.isMobile) {
+      await page.getByRole('button', { name: 'Mais ações da carteira Principal' }).click()
+      await page.getByRole('menuitem', { name: 'Desconectar carteira' }).click()
+      await expect(app.liveRegion()).toContainText('Carteira desconectada.')
+      await page.getByRole('button', { name: 'Mais ações da carteira Principal' }).click()
+      await expect(page.getByRole('menuitem', { name: 'Conectar carteira' })).toBeVisible()
+    } else {
+      await page.getByRole('button', { name: 'Desconectar' }).click()
+      await expect(page.getByText('Carteira não conectada')).toBeVisible()
+    }
   })
 
   test('edição esgotada durante a compra bloqueia a confirmação', async ({ app, page }) => {

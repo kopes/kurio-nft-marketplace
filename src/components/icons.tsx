@@ -343,3 +343,14 @@ export function SearchMobileIcon(props: IconProps) {
     </svg>
   )
 }
+
+/** Três pontos verticais dos cards de carteira (frame "Mobile / Pagamento"): pontos de 3 px a cada 6 px. */
+export function MoreVerticalIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 3 15" fill="none" aria-hidden="true" focusable="false" {...props}>
+      <circle cx="1.5" cy="1.5" r="1.5" fill="currentColor"/>
+      <circle cx="1.5" cy="7.5" r="1.5" fill="currentColor"/>
+      <circle cx="1.5" cy="13.5" r="1.5" fill="currentColor"/>
+    </svg>
+  )
+}

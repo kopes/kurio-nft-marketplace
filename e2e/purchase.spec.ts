@@ -1,4 +1,4 @@
-import { expect, goToCheckout, openReview, test, USERS } from './fixtures'
+import { expect, goToCheckout, openCheckoutDetails, openReview, test, USERS } from './fixtures'
 
 test.describe('Compra', () => {
   test('compra completa do catálogo ao recibo confirmado', async ({ app, page }) => {
@@ -15,17 +15,22 @@ test.describe('Compra', () => {
     await page.getByRole('button', { name: 'Conectar e finalizar' }).click()
     await expect(page).toHaveURL(/\/pagamento$/)
 
-    // Validação dos campos do layout (no mobile ficam em um bloco expansível).
-    if (app.isMobile) await page.getByRole('button', { name: /Dados do colecionador/ }).click()
+    // Validação dos campos do layout (no mobile ficam na folha "Dados do pagamento", que reabre com os erros).
+    const details = page.getByRole('dialog', { name: 'Dados do pagamento' })
+    if (app.isMobile) await openCheckoutDetails(page)
     await page.getByLabel('Código de indicação').fill('')
     await page.getByLabel('Nome de usuário').fill('a')
-    const dialog = page.getByRole('dialog')
+    if (app.isMobile) await details.getByRole('button', { name: 'Fechar' }).click()
     await page.getByRole('button', { name: 'Confirmar compra' }).click()
     await expect(page.getByText('Informe o código de indicação')).toBeVisible()
     await expect(page.getByText('Use pelo menos 3 caracteres')).toBeVisible()
-    await expect(dialog).toBeHidden()
+    await expect(page.getByRole('dialog', { name: 'Revise seu pedido' })).toBeHidden()
     await page.getByLabel('Código de indicação').fill('KURIO-ANA')
     await page.getByLabel('Nome de usuário').fill('ana.coleciona')
+    if (app.isMobile) {
+      await details.getByRole('button', { name: 'Concluir' }).click()
+      await expect(details).toBeHidden()
+    }
 
     // Revisão antes do envio (inclui conexão simulada da carteira).
     const review = await openReview(page)
