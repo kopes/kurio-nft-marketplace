@@ -1,0 +1,397 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@fontsource/roboto-mono/latin-400.css';
+@import '@fontsource/roboto-mono/latin-500.css';
+@import '@fontsource/roboto-mono/latin-700.css';
+
+/*
+ * O tema é sempre escuro (tokens abaixo). As variantes `dark:` dos componentes shadcn passam a depender
+ * de uma classe `.dark` que a aplicação não usa, para a aparência não mudar com a preferência do sistema
+ * (ex.: aba ativa com fundo `bg-input/30` só para quem usa o modo escuro do SO).
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Tokens extraídos dos estilos do Figma (Color/*, Text/*).
+ * Ajustes de acessibilidade documentados em ARCHITECTURE.md:
+ *  - --input: borda de campos clareada (#3F2319 → #86603F) para contraste 3:1 (WCAG 1.4.11);
+ *  - --destructive: erros usam Text/Coral (#F0805F) em vez de Color/Error (#ED1B2E), que não atinge 4.5:1 no fundo escuro.
+ */
+:root {
+  --radius: 6px;
+  --background: #140d0a;
+  --foreground: #f5f1eb;
+  --card: #241612;
+  --card-foreground: #f5f1eb;
+  --popover: #241612;
+  --popover-foreground: #f5f1eb;
+  --primary: #d28a4c;
+  --primary-foreground: #140d0a;
+  --secondary: #2f1d15;
+  --secondary-foreground: #f5f1eb;
+  --muted: #2f1d15;
+  --muted-foreground: #cfb28c;
+  --accent: #2f1d15;
+  --accent-foreground: #e89b55;
+  --destructive: #f0805f;
+  --border: rgb(210 138 76 / 0.3);
+  --input: #86603f;
+  --ring: #e89b55;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Paleta nomeada do Figma */
+  --color-ink: #140d0a;
+  --color-surface: #241612;
+  --color-raised: #2f1d15;
+  --color-deep: #38220f;
+  --color-line: #3f2319;
+  --color-cream: #f5f1eb;
+  --color-copper: #d28a4c;
+  --color-highlight: #e89b55;
+  --color-sand: #cfb28c;
+  --color-khaki: #b39463;
+  --color-amber: #e3a44e;
+  --color-coral: #f0805f;
+  --color-success: #00a66c;
+  --color-success-text: #3fd19b;
+
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: var(--radius);
+  --radius-xl: 12px;
+
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-skeleton-pulse: skeleton-pulse 1.6s ease-in-out infinite;
+
+  /*
+   * Movimento: curvas com desaceleração longa (sensação de app) e entradas curtas. As entradas usam
+   * `backwards` (e não `both`): depois de terminar, a animação não segura `transform`/`opacity`, então
+   * as transições de hover continuam funcionando no mesmo elemento.
+   */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --animate-fade-up: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  --animate-fade-in: fade-in 0.45s ease-out backwards;
+  --animate-scale-in: scale-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  --animate-sheet-up: sheet-up 0.7s cubic-bezier(0.32, 0.72, 0, 1) backwards;
+  --animate-image-in: image-in 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-pop: pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-pop-in: pop-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-drift: drift 16s ease-in-out infinite;
+
+  @keyframes shimmer {
+    from {
+      background-position: 150% 0;
+    }
+    to {
+      background-position: -50% 0;
+    }
+  }
+
+  @keyframes skeleton-pulse {
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  /* Só deslocamento (sem opacidade): usado em superfícies que contêm a arte principal (LCP). */
+  @keyframes sheet-up {
+    from {
+      transform: translateY(48px);
+    }
+  }
+
+  /* Arte recém-carregada: sai do desfoque em vez de "piscar" sobre o shimmer. */
+  @keyframes image-in {
+    from {
+      opacity: 0.5;
+      filter: blur(8px);
+    }
+  }
+
+  @keyframes pop {
+    40% {
+      transform: scale(1.28);
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+  }
+
+  @keyframes float {
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  @keyframes drift {
+    50% {
+      transform: translate(14px, -10px) scale(1.05);
+    }
+  }
+}
+
+/* Atraso escalonado para entradas em sequência: `stagger-1` = 70 ms, `stagger-2` = 140 ms… */
+@utility stagger-* {
+  animation-delay: calc(--value(integer) * 70ms);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    overflow-x: clip;
+  }
+
+  /* A partir do tablet o cabeçalho é fixo: âncoras, `scrollIntoView` e o foco por teclado não ficam por baixo dele. */
+  @media (min-width: 48rem) {
+    html {
+      scroll-padding-top: 5rem;
+    }
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /*
+   * O preflight do Tailwind v4 deixa botões com cursor padrão. Restaura o pointer em tudo que é clicável
+   * (botões, abas, opções e controles nativos); estados desabilitados mantêm o cursor padrão ou o `cursor-not-allowed` local.
+   */
+  :is(button, select, summary):not(:disabled, [aria-disabled='true']),
+  :is([role='button'], [role='tab'], [role='option'], [role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'], [role='slider']):not(
+      [aria-disabled='true'],
+      [data-disabled]
+    ),
+  input:is([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='submit'], [type='button'], [type='reset']):not(:disabled),
+  label:has(> :is(input[type='checkbox'], input[type='radio'], button[role='checkbox'], button[role='radio']):not(:disabled)) {
+    cursor: pointer;
+  }
+
+  /*
+   * Estados de hover/foco sem "salto": links e botões sem transição própria trocam de cor suavemente.
+   * `:where` mantém especificidade zero, então qualquer utilitário `transition-*` do componente prevalece.
+   */
+  :where(a, button, summary, [role='button'], [role='tab']) {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow;
+    transition-duration: 200ms;
+    transition-timing-function: ease-out;
+  }
+
+  ::selection {
+    background: rgb(210 138 76 / 0.45);
+    color: #f5f1eb;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #b39463;
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    /* Indicadores de carregamento ficam de fora: trocam o movimento por um pulso de opacidade (abaixo e no index.html). */
+    *:not(.skeleton, .app-loader__ring),
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-delay: 0s !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      transition-delay: 0s !important;
+    }
+  }
+}
+
+/*
+ * Transição entre páginas (View Transitions; o router só a dispara quando o caminho muda e sem movimento reduzido).
+ * A página antiga sai rápido e a nova entra um pouco depois, com desaceleração longa. Cabeçalho e barra inferior
+ * têm nome próprio (ficam parados, sem esmaecer junto com a página) e o indicador da navegação principal desliza entre os itens.
+ */
+::view-transition-old(root) {
+  animation: 180ms cubic-bezier(0.4, 0, 1, 1) both vt-fade-out;
+}
+
+::view-transition-new(root) {
+  animation: 360ms cubic-bezier(0.16, 1, 0.3, 1) 60ms both vt-fade-in;
+}
+
+::view-transition-group(nav-indicator) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/*
+ * Revelação ao rolar (scroll-driven, sem JavaScript): o bloco sobe e aparece acompanhando a rolagem.
+ * Navegadores sem suporte e quem prefere movimento reduzido veem o conteúdo direto.
+ * Use só em blocos com conteúdo abaixo (ex.: rodapé), para a revelação sempre poder terminar.
+ */
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.98);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 25%;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-[1232px] px-4 md:px-6 xl:px-4;
+  }
+
+  /* Skeleton com shimmer: preserva dimensões do conteúdo; com movimento reduzido, o brilho vira um pulso de opacidade. */
+  .skeleton {
+    background-color: #2f1d15;
+    background-image: linear-gradient(90deg, rgb(232 155 85 / 0) 30%, rgb(232 155 85 / 0.22) 50%, rgb(232 155 85 / 0) 70%);
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: var(--animate-shimmer);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton {
+      animation: var(--animate-skeleton-pulse);
+      background-image: none;
+    }
+  }
+
+  .sr-only-focusable:not(:focus):not(:focus-within) {
+    @apply sr-only;
+  }
+
+  /* Filhos diretos entram em sequência, 60 ms um após o outro (do 8º em diante, juntos). */
+  .stagger-children > * {
+    animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+
+  .stagger-children > :nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  .stagger-children > :nth-child(3) {
+    animation-delay: 120ms;
+  }
+
+  .stagger-children > :nth-child(4) {
+    animation-delay: 180ms;
+  }
+
+  .stagger-children > :nth-child(5) {
+    animation-delay: 240ms;
+  }
+
+  .stagger-children > :nth-child(6) {
+    animation-delay: 300ms;
+  }
+
+  .stagger-children > :nth-child(7) {
+    animation-delay: 360ms;
+  }
+
+  .stagger-children > :nth-child(n + 8) {
+    animation-delay: 420ms;
+  }
+}
+
+/*
+ * Libera o app shell estático do index.html quando esta folha é aplicada. Fica fora de @layer de propósito:
+ * regras em camadas perdem para o <style> inline que o oculta.
+ */
+.app-shell {
+  visibility: visible;
+}

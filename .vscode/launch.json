@@ -1,0 +1,53 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Kurio: dev (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}",
+      "preLaunchTask": "vite: dev",
+      "postDebugTask": "vite: parar dev"
+    },
+    {
+      "name": "Kurio: dev (Edge)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}",
+      "preLaunchTask": "vite: dev",
+      "postDebugTask": "vite: parar dev"
+    },
+    {
+      "name": "Kurio: preview do build (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:4173",
+      "webRoot": "${workspaceFolder}",
+      "preLaunchTask": "vite: preview",
+      "postDebugTask": "vite: parar preview"
+    },
+    {
+      "name": "Kurio: só o servidor dev",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm dev",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Playwright: testes E2E",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm test:e2e",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Lighthouse: auditoria",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm build && pnpm lighthouse",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

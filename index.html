@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#140D0A" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content="Kurio é um marketplace de NFTs: descubra, colecione e compre arte digital verificada de criadores emergentes e consagrados." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" as="image" type="image/webp" href="/nfts/emerald-480.webp" imagesrcset="/nfts/emerald-480.webp 480w, /nfts/emerald-720.webp 720w, /nfts/emerald-960.webp 960w" imagesizes="(min-width: 768px) 450px, 140px" fetchpriority="high" />
+    <title>Kurio — Marketplace de NFTs</title>
+    <!--
+      O app shell usa classes do Tailwind: fica oculto até a folha de estilos ser aplicada (no dev, ela chega via JS).
+      O anel de carregamento (.app-loader) é definido só aqui, inline, porque precisa aparecer antes de qualquer CSS;
+      o React reutiliza as mesmas classes no carregamento de rotas (PagePending). Ele só surge após 300 ms,
+      para não piscar quando a aplicação monta rápido, e vira um pulso de opacidade com movimento reduzido.
+    -->
+    <style>
+      html { background: #140d0a; }
+      .app-shell { visibility: hidden; }
+      .app-loader { opacity: 0; animation: app-loader-in 0.2s ease-out 0.3s forwards; }
+      .app-loader--fixed { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; }
+      .app-loader__ring { display: block; width: 40px; height: 40px; box-sizing: border-box; border-radius: 50%; border: 3px solid #3f2319; border-top-color: #d28a4c; animation: app-loader-spin 0.8s linear infinite; }
+      .app-loader__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+      @keyframes app-loader-in { to { opacity: 1; } }
+      @keyframes app-loader-spin { to { transform: rotate(360deg); } }
+      @keyframes app-loader-pulse { 50% { opacity: 0.35; } }
+      @media (prefers-reduced-motion: reduce) {
+        .app-loader__ring { border-color: #d28a4c; animation: app-loader-pulse 1.6s ease-in-out infinite; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <!-- App shell estático: pintado antes do JavaScript (FCP) e substituído pelo React no primeiro render. -->
+      <div class="app-loader app-loader--fixed" role="status"><span class="app-loader__ring"></span><span class="app-loader__label">Carregando o Kurio…</span></div>
+      <header class="app-shell hidden pt-6 md:block">
+        <div class="container-page">
+          <div class="relative flex h-[45px] items-start justify-between border-b border-primary/30">
+            <div class="flex h-[34px] items-center lg:w-40"><a href="/" class="text-sm font-bold tracking-[0.1em] text-foreground" aria-label="Kurio, página inicial">KURIO</a></div>
+            <nav aria-label="Principal" class="absolute left-1/2 -translate-x-1/2">
+              <ul class="flex gap-4 lg:gap-10">
+                <li><a data-shell-nav="inicio" href="/" class="block border-b-[3px] border-transparent pb-5 text-sm leading-[21px] text-foreground lg:text-base">Início</a></li>
+                <li><a data-shell-nav="mercado" href="/mercado" class="block border-b-[3px] border-transparent pb-5 text-sm leading-[21px] text-foreground lg:text-base">Mercado</a></li>
+                <li><a href="/em-breve?secao=criadores" class="block border-b-[3px] border-transparent pb-5 text-sm leading-[21px] text-foreground lg:text-base">Criadores</a></li>
+                <li><a href="/em-breve?secao=aprenda" class="block border-b-[3px] border-transparent pb-5 text-sm leading-[21px] text-foreground lg:text-base">Aprenda</a></li>
+              </ul>
+            </nav>
+            <div class="flex items-center gap-1 lg:gap-6">
+              <span class="flex size-10 items-center justify-center"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="size-5"><path d="M14.5719 16.0021C10.5749 19.1856 4.98775 18.3047 2.02832 14.6535C-0.828048 11.1285 -0.649408 6.04318 2.44931 2.82468C5.6511 -0.50057 10.6849 -0.944478 14.3339 1.78328C15.6412 2.76038 16.6175 4.00345 17.2533 5.50811C17.893 7.02152 18.0872 8.59612 17.8655 10.22C17.6444 11.8365 16.9991 13.2768 15.9491 14.621C16.0341 14.6766 16.1247 14.7166 16.1896 14.7815C17.3439 15.9303 18.4938 17.0834 19.6481 18.2322C19.9217 18.5044 20.0579 18.8216 19.9767 19.2037C19.8155 19.9642 18.9098 20.2576 18.3289 19.7357C18.0566 19.4915 17.8061 19.2224 17.5475 18.964C16.5994 18.0168 15.6518 17.0691 14.7037 16.122C14.6643 16.0845 14.6231 16.0495 14.5719 16.0021ZM15.9598 8.98633C15.9698 5.12664 12.8523 2.00617 8.98218 2.00055C5.12267 1.99493 2.00771 5.09043 1.99085 8.94762C1.97398 12.8167 5.08519 15.9459 8.96718 15.964C12.8111 15.9821 15.9498 12.8498 15.9598 8.98633Z" fill="currentColor"/></svg></span>
+              <a href="/carrinho" class="flex size-10 items-center justify-center text-foreground" aria-label="Carrinho"><svg viewBox="0 0 25 24" fill="none" aria-hidden="true" class="h-6 w-[25px]"><path d="M17.1558 20.25H9.89066C6.78905 20.25 4.26569 17.7267 4.26569 14.6251V8.85947C4.26569 5.9762 2.82861 3.30739 0.421544 1.72031C-0.0107343 1.43531 -0.130077 0.853876 0.154921 0.421598C0.439919 -0.0107278 1.02131 -0.130118 1.45368 0.154974C2.82776 1.06097 3.94254 2.2559 4.73969 3.63167C4.91195 3.82466 6.30104 5.29699 8.57821 5.29699H19.3738C22.3191 5.24191 24.6245 8.19769 23.8544 11.0406L22.6117 15.9939C21.9829 18.4998 19.7394 20.25 17.1558 20.25ZM5.90415 6.64234C6.06001 7.36238 6.14068 8.10483 6.14068 8.85947V14.6251C6.14068 16.6928 7.82292 18.375 9.89066 18.375H17.1558C18.8782 18.375 20.3739 17.2082 20.793 15.5376L22.0358 10.5844C22.4933 8.89509 21.1233 7.13931 19.3738 7.17198H8.57817C7.54828 7.17198 6.65185 6.94993 5.90415 6.64234ZM9.42191 22.8281C9.42191 22.1809 8.89724 21.6563 8.25004 21.6563C6.69511 21.7182 6.69647 23.9387 8.25004 24C8.89724 24 9.42191 23.4753 9.42191 22.8281ZM18.75 22.8281C18.75 22.1809 18.2253 21.6563 17.5781 21.6563C16.0232 21.7182 16.0245 23.9387 17.5781 24C18.2253 24 18.75 23.4753 18.75 22.8281ZM20.3113 9.98446C20.3113 9.46668 19.8916 9.04697 19.3738 9.04697H8.95316C7.7093 9.09647 7.71023 10.8729 8.95316 10.922H19.3738C19.8916 10.922 20.3113 10.5022 20.3113 9.98446Z" fill="currentColor"/></svg></a>
+              <span class="h-[35px] w-[100px]"></span>
+            </div>
+          </div>
+        </div>
+      </header>
+      <script>
+        (function () {
+          var p = location.pathname
+          var key = p === '/' ? 'inicio' : /^\/(mercado|nft|carrinho|pagamento|pedido)/.test(p) ? 'mercado' : ''
+          var link = key && document.querySelector('[data-shell-nav="' + key + '"]')
+          if (link) link.className = link.className.replace('border-transparent', 'border-primary font-bold').replace('text-foreground', 'text-highlight')
+        })()
+      </script>
+      <nav id="shell-nav" aria-label="Navegação inferior" class="app-shell pointer-events-none fixed inset-x-0 bottom-0 z-40 h-[126px] md:hidden">
+        <svg id="shell-nav-bar" aria-hidden="true" class="absolute inset-x-0 bottom-0 w-full drop-shadow-[0_-10px_15px_rgba(10,6,4,0.45)]" height="95" preserveAspectRatio="none"><path class="fill-card"></path></svg>
+        <a href="/" aria-label="Início" class="pointer-events-auto absolute flex size-11 items-center justify-center text-sand" style="left:24px;top:59px"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="size-5"><path d="M7.61231 17.311V14.7629C7.61231 14.1124 8.14347 13.5851 8.79869 13.5851H11.1938C11.5085 13.5851 11.8102 13.7092 12.0327 13.93C12.2552 14.1509 12.3802 14.4505 12.3802 14.7629V17.311C12.3782 17.5814 12.4851 17.8414 12.677 18.0333C12.8689 18.2252 13.13 18.3332 13.4024 18.3332H15.0365C15.7997 18.3351 16.5323 18.0355 17.0726 17.5005C17.613 16.9655 17.9167 16.239 17.9167 15.4814V8.22222C17.9166 7.61022 17.6434 7.02971 17.1705 6.63706L11.6117 2.22973C10.6447 1.45697 9.25926 1.48192 8.32116 2.28899L2.88918 6.63706C2.39395 7.01813 2.09796 7.60037 2.08333 8.22222V15.4739C2.08333 17.053 3.37282 18.3332 4.96348 18.3332H6.56024C7.12602 18.3332 7.58583 17.88 7.58993 17.3184L7.61231 17.311Z" fill="currentColor"/></svg></a>
+        <a href="/perfil/favoritos" aria-label="Lista de interesse" class="pointer-events-auto absolute flex size-11 items-center justify-center text-sand" style="left:96px;top:60px"><svg viewBox="0 0 20 18" fill="none" aria-hidden="true" class="h-[18px] w-5"><path d="M18.4134 1.74133C17.3781 0.618439 15.9575 0 14.413 0C13.2585 0 12.2012 0.36499 11.2704 1.08475C10.8008 1.44806 10.3752 1.89255 10 2.41135C9.62494 1.8927 9.19922 1.44806 8.7294 1.08475C7.79877 0.36499 6.74149 0 5.58701 0C4.04251 0 2.62177 0.618439 1.58646 1.74133C0.563507 2.8511 0 4.36722 0 6.01059C0 7.70203 0.630341 9.25034 1.98364 10.8833C3.19427 12.3441 4.93423 13.8269 6.94916 15.544C7.63718 16.1304 8.41705 16.795 9.22684 17.5031C9.44077 17.6904 9.71527 17.7936 10 17.7936C10.2846 17.7936 10.5592 17.6904 10.7729 17.5034C11.5826 16.7952 12.363 16.1302 13.0513 15.5435C15.0659 13.8268 16.8059 12.3441 18.0165 10.8832C19.3698 9.25034 20 7.70203 20 6.01044C20 4.36722 19.4365 2.8511 18.4134 1.74133Z" fill="currentColor"/></svg></a>
+        <a href="/mercado" aria-label="Explorar mercado" class="pointer-events-auto absolute top-0 left-1/2 flex size-[65px] -translate-x-1/2 items-center justify-center rounded-full bg-[linear-gradient(180deg,rgb(210_138_76/0.4)_-17%,#d28a4c_109%)] text-cream"><svg viewBox="0 0 27 24" fill="none" aria-hidden="true" class="h-6 w-[27px]"><path d="M13.3819 12.8913C9.28498 12.8913 5.18803 12.8913 1.09108 12.8906C0.961448 12.8906 0.827342 12.8943 0.702176 12.8667C0.25441 12.7684 -0.0480741 12.337 0.00631347 11.893C0.060701 11.4482 0.439924 11.1114 0.913021 11.1092C1.98364 11.1032 3.055 11.1062 4.12561 11.1062C11.3234 11.1062 18.5212 11.107 25.719 11.1084C25.8575 11.1084 26.0013 11.1047 26.1347 11.136C26.5743 11.2396 26.8641 11.6553 26.8179 12.0919C26.7702 12.5389 26.3947 12.8868 25.9246 12.8891C24.7139 12.8965 23.504 12.8928 22.2933 12.8928C19.3228 12.8928 16.3524 12.8928 13.3827 12.8928C13.3819 12.8928 13.3819 12.8921 13.3819 12.8913Z" fill="currentColor"/><path d="M10.5553 24.0002C9.20453 23.7976 7.81951 23.7216 6.51123 23.3654C3.76503 22.6167 2.19524 20.7243 1.7445 17.9274C1.57761 16.8926 1.47479 15.8473 1.35559 14.8057C1.28332 14.1762 1.58357 13.7634 2.13191 13.6956C2.67653 13.6286 3.07587 13.9817 3.13622 14.5278C3.26586 15.708 3.35601 16.8978 3.57877 18.0615C3.98109 20.1633 5.70212 21.6288 7.83664 21.8165C8.84617 21.9052 9.8542 22.0177 10.8607 22.1339C11.5953 22.2188 11.9343 23.0347 11.4948 23.6314C11.3048 23.89 11.0805 23.9637 10.5553 24.0002Z" fill="currentColor"/><path d="M25.4463 9.39819C25.4307 9.53528 25.4321 9.67758 25.3949 9.8087C25.3077 10.1186 25.0015 10.3779 24.7422 10.3831C24.3004 10.3921 23.7998 10.0643 23.6977 9.65001C23.6247 9.35572 23.6225 9.0443 23.5822 8.74107C23.4571 7.78444 23.3967 6.81366 23.1881 5.87566C22.7604 3.95571 21.5326 2.73758 19.6142 2.32259C18.4743 2.07599 17.2971 1.99999 16.1363 1.84726C16.0075 1.83013 15.8756 1.82417 15.7504 1.79213C15.331 1.68559 15.0583 1.287 15.1112 0.870521C15.17 0.407854 15.5269 0.0539627 15.9732 0.0859992C17.5042 0.195519 19.0427 0.30653 20.5119 0.776646C22.8633 1.52988 24.3451 3.15778 24.9054 5.53965C25.2012 6.79876 25.3018 8.10332 25.4903 9.38701C25.4761 9.39148 25.4612 9.39446 25.4463 9.39819Z" fill="currentColor"/><path d="M25.4224 14.8807C25.2988 16.1673 25.2086 17.5807 24.8167 18.9441C24.0777 21.5145 21.8962 23.2891 19.2372 23.5491C18.1554 23.6549 17.0781 23.8106 15.9992 23.944C15.617 23.9917 15.2013 23.6229 15.1208 23.1647C15.0404 22.7058 15.3287 22.255 15.7832 22.1939C16.3263 22.1202 16.8776 22.106 17.4208 22.033C18.3223 21.913 19.2565 21.8803 20.1133 21.6083C21.97 21.0197 23.007 19.6638 23.279 17.7453C23.4235 16.7254 23.5308 15.7002 23.6336 14.675C23.6932 14.082 24.0799 13.6685 24.6007 13.6983C25.1043 13.7273 25.4515 14.1744 25.4224 14.8807Z" fill="currentColor"/><path d="M1.3295 9.27513C1.52768 7.95493 1.62081 6.60791 1.9449 5.319C2.60053 2.71063 4.34912 1.11849 6.95898 0.532893C8.1339 0.269151 9.34756 0.177512 10.5448 0.0173291C10.7266 -0.00725703 10.9226 -0.0087471 11.0984 0.0329749C11.5119 0.130574 11.7548 0.509797 11.7153 0.940427C11.6736 1.39117 11.3681 1.69068 10.9285 1.73985C9.84748 1.86055 8.7642 1.97081 7.68688 2.1228C5.4108 2.44316 3.83356 4.02338 3.52363 6.28456C3.37536 7.36933 3.2569 8.45857 3.1295 9.54632C3.07809 9.98441 2.70185 10.3122 2.24217 10.3063C1.79589 10.3003 1.41518 9.94492 1.39059 9.50833C1.38612 9.43457 1.38985 9.36007 1.38985 9.28556C1.36973 9.28184 1.34961 9.27886 1.3295 9.27513Z" fill="currentColor"/></svg></a>
+        <a href="/carrinho" aria-label="Carrinho" class="pointer-events-auto absolute flex size-11 items-center justify-center text-sand" style="right:90px;top:59px"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="size-5"><path d="M18.3333 6.80118L17.3897 12.7776C17.2181 13.9561 16.2745 14.7136 15.0735 14.7136H6.83825C5.72305 14.7136 4.69364 13.8719 4.52207 12.7776L3.49266 5.79108L3.2353 3.85506C3.14952 3.35001 2.7206 3.01331 2.12011 3.01331H1.51962C1.17648 3.01331 0.833344 2.6766 0.833344 2.3399C0.833344 2.0032 1.17648 1.6665 1.51962 1.6665H2.12011C3.32109 1.6665 4.3505 2.50825 4.43628 3.68671L4.60785 5.03351H16.7892C17.2181 5.03351 17.6471 5.20186 17.9044 5.53856C18.2476 5.87526 18.3333 6.38031 18.3333 6.80118Z" fill="currentColor"/><path d="M15.2451 18.3332C15.7189 18.3332 16.103 17.9563 16.103 17.4914C16.103 17.0265 15.7189 16.6497 15.2451 16.6497C14.7713 16.6497 14.3873 17.0265 14.3873 17.4914C14.3873 17.9563 14.7713 18.3332 15.2451 18.3332Z" fill="currentColor"/><path d="M6.66668 18.3332C7.14045 18.3332 7.52452 17.9563 7.52452 17.4914C7.52452 17.0265 7.14045 16.6497 6.66668 16.6497C6.1929 16.6497 5.80883 17.0265 5.80883 17.4914C5.80883 17.9563 6.1929 18.3332 6.66668 18.3332Z" fill="currentColor"/></svg></a>
+        <a href="/entrar" aria-label="Entrar" class="pointer-events-auto absolute flex size-11 items-center justify-center text-sand" style="right:28px;top:59px"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="size-5"><path d="M10.0001 9.82977C12.2659 9.82977 14.1026 8.00236 14.1026 5.74814C14.1026 3.49391 12.2659 1.6665 10.0001 1.6665C7.73429 1.6665 5.89751 3.49391 5.89751 5.74814C5.89751 8.00236 7.73429 9.82977 10.0001 9.82977Z" fill="currentColor"/><path d="M12.1368 11.5305H7.86332C5.38469 11.5305 3.3334 13.5713 3.3334 16.0373C3.3334 16.6326 3.58981 17.1428 4.10264 17.3979C4.87187 17.823 6.58127 18.3332 10.0001 18.3332C13.4189 18.3332 15.1283 17.823 15.8975 17.3979C16.3249 17.1428 16.6667 16.6326 16.6667 16.0373C16.6667 13.4863 14.6155 11.5305 12.1368 11.5305Z" fill="currentColor"/></svg></a>
+      </nav>
+      <script>
+        (function () {
+          var nav = document.getElementById('shell-nav')
+          if (/^\/(nft\/|carrinho|pagamento|entrar|cadastro)/.test(location.pathname)) return nav.remove()
+          var w = window.innerWidth, c = w / 2
+          var x = function (o) { return (c + o).toFixed(2) }
+          var d = 'M' + x(75.85) + ' 0C' + x(62.09) + ' 0 ' + x(49.87) + ' 8.2 ' + x(44.02) + ' 20.65C' + x(36.26) + ' 37.17 ' + x(19.46) + ' 48.62 ' + x(0) + ' 48.62C' + x(-19.46) + ' 48.62 ' + x(-36.26) + ' 37.18 ' + x(-44.02) + ' 20.65C' + x(-49.87) + ' 8.2 ' + x(-62.1) + ' 0 ' + x(-75.85) + ' 0H28.93C12.95 0 0 12.95 0 28.93V95H' + w + 'V28.93C' + w + ' 12.95 ' + (w - 12.95) + ' 0 ' + (w - 28.93) + ' 0Z'
+          var bar = document.getElementById('shell-nav-bar')
+          bar.setAttribute('viewBox', '0 0 ' + w + ' 95')
+          bar.firstChild.setAttribute('d', d)
+        })()
+      </script>
+    </div>
+    <noscript><p class="container-page py-8">O Kurio precisa de JavaScript para funcionar.</p></noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

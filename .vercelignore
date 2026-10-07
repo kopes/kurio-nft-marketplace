@@ -1,0 +1,12 @@
+# Artefatos locais que o build na Vercel não usa (a CLI não lê o .gitignore).
+# Os testes em e2e/*.ts ficam: `pnpm build` roda `tsc -b`, que os verifica (tsconfig.node.json).
+dist
+playwright-report
+test-results
+test-results-*
+blob-report
+lighthouse/reports
+e2e/__screenshots__
+.tanstack
+.qodo
+.vscode

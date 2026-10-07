@@ -1,0 +1,57 @@
+# Dependências
+node_modules/
+.pnpm-store/
+
+# Build (Vite) e caches de ferramentas
+dist/
+dist-ssr/
+.vite/
+*.tsbuildinfo
+.eslintcache
+coverage/
+
+# Temporários do plugin do TanStack Router.
+# O src/routeTree.gen.ts é versionado: `pnpm build` roda `tsc -b` antes do Vite.
+.tanstack/
+
+# Ambiente: o .env tem só valores padrão, sem segredos, e é versionado.
+# Sobrescritas locais (.env.local, .env.production.local, ...) ficam fora.
+*.local
+
+# Playwright: relatórios e artefatos gerados a cada execução.
+# As baselines em e2e/__screenshots__/ são versionadas.
+playwright-report/
+test-results/
+test-results-*/
+blob-report/
+playwright/.cache/
+
+# Lighthouse: os relatórios em lighthouse/reports/ fazem parte da entrega e são versionados.
+
+# Deploy
+.vercel/
+.netlify/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editores e assistentes: launch.json e tasks.json do VS Code são do projeto.
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+.idea/
+*.suo
+*.sw?
+.qodo/
+.claude/settings.local.json
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini

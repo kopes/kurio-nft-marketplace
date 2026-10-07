@@ -1,0 +1,49 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "vite: dev",
+      "detail": "Servidor de desenvolvimento com mocks (http://localhost:5173)",
+      "type": "shell",
+      "command": "pnpm dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": { "regexp": "^__never_matches__$" },
+        "background": { "activeBegins": true, "beginsPattern": ".", "endsPattern": "ready in" }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "vite: preview",
+      "detail": "Build de produção servido em http://localhost:4173",
+      "type": "shell",
+      "command": "pnpm build && pnpm preview",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": { "regexp": "^__never_matches__$" },
+        "background": { "activeBegins": true, "beginsPattern": ".", "endsPattern": "localhost" }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "vite: parar dev",
+      "type": "shell",
+      "command": "echo ${input:terminateDev}",
+      "presentation": { "reveal": "never" },
+      "problemMatcher": []
+    },
+    {
+      "label": "vite: parar preview",
+      "type": "shell",
+      "command": "echo ${input:terminatePreview}",
+      "presentation": { "reveal": "never" },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    { "id": "terminateDev", "type": "command", "command": "workbench.action.tasks.terminate", "args": "vite: dev" },
+    { "id": "terminatePreview", "type": "command", "command": "workbench.action.tasks.terminate", "args": "vite: preview" }
+  ]
+}
