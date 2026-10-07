@@ -183,6 +183,8 @@ A Performance mobile (79 e 83) fica abaixo da meta de 90. O LCP das duas página
 
 Publicado na Vercel em **https://kurio-nft-marketplace-roan.vercel.app**. O [`vercel.json`](vercel.json) faz o fallback SPA, define o cache dos assets e libera o Service Worker do MSW, e o [`.vercelignore`](.vercelignore) evita enviar relatórios e artefatos locais. Também há `public/_redirects` para a Netlify.
 
+O projeto da Vercel está ligado ao repositório: cada push na `main` publica em produção, e outras branches geram deploys de prévia. Para publicar manualmente pela CLI:
+
 ```bash
 pnpm dlx vercel login
 pnpm dlx vercel deploy --prod
